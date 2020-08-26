@@ -31,7 +31,10 @@ namespace Movies.Client.Services
         public async Task Run()
         {
             // await GetResource();
-            await GetResourceThroughHttpRequestMessage();
+            //await GetResourceThroughHttpRequestMessage();
+            //await CreateResource();
+
+            await DeleteResource();
         }
 
 
@@ -68,7 +71,67 @@ namespace Movies.Client.Services
 
         public async Task CreateResource()
         {
+            var movieToCreate = new MovieForCreation()
+            {
+                Title = "Talking Dog Movie",
+                Description = "It's a movie with talking dogs",
+                DirectorId = Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
+                ReleaseDate = new DateTimeOffset(new DateTime(2015, 9, 2)),
+                Genre = "Animals"
+            };
 
+            var serializedMovie = JsonConvert.SerializeObject(movieToCreate);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "api/movies");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            request.Content = new StringContent(serializedMovie);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var createdMovie = JsonConvert.DeserializeObject<Movie>(content);
+        }
+
+
+        private async Task UpdateResource()
+        {
+            var movieToUpdate = new MovieForCreation()
+            {
+                Title = "Pulp Fiction",
+                Description = "It's a movie.",
+                DirectorId = Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
+                ReleaseDate = new DateTimeOffset(new DateTime(2015, 9, 2)),
+                Genre = "Thriller"
+            };
+
+            var serializedMovie = JsonConvert.SerializeObject(movieToUpdate);
+
+            var request = new HttpRequestMessage(HttpMethod.Put, "api/movies/5b1c2b4d-48c7-402a-80c3-cc796ad49c6b");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            request.Content = new StringContent(serializedMovie);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var createdMovie = JsonConvert.DeserializeObject<Movie>(content);
+        }
+
+
+        private async Task DeleteResource()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Delete, "api/movies/5b1c2b4d-48c7-402a-80c3-cc796ad49c6b");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
         }
     }
 }
